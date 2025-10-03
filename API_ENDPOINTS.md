@@ -337,6 +337,121 @@ Handle user image upload with validation.
 
 ---
 
+### 7. POST /api/generate
+Generate an AI image using a template and user-uploaded image.
+
+**Request Body:**
+```json
+{
+  "templateId": "template-1",
+  "imageData": "data:image/png;base64,iVBORw0KGgo..."
+}
+```
+
+**Validation Rules:**
+- `templateId`: Required, must be a valid template ID
+- `imageData`: Required, base64 encoded image data (with or without data URI prefix)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "generatedImage": "Generated content or base64 image data...",
+  "mimeType": "text/plain"
+}
+```
+
+**Error Response (400 Bad Request - Missing Fields):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Template ID and image data are required",
+    "retryable": false
+  }
+}
+```
+
+**Error Response (404 Not Found - Template Not Found):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "TEMPLATE_NOT_FOUND",
+    "message": "Template not found",
+    "retryable": false
+  }
+}
+```
+
+**Error Response (429 Too Many Requests - Rate Limit):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT",
+    "message": "API rate limit exceeded. Please try again in a few minutes.",
+    "retryable": true,
+    "details": "Rate limit error details"
+  }
+}
+```
+
+**Error Response (502 Bad Gateway - API Error):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "API_ERROR",
+    "message": "Gemini API key is not configured",
+    "retryable": false
+  }
+}
+```
+
+**Error Response (503 Service Unavailable - Network Error):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NETWORK_ERROR",
+    "message": "Network connection issue. Please check your internet connection and try again.",
+    "retryable": true,
+    "details": "Network error details"
+  }
+}
+```
+
+**Error Response (500 Internal Server Error):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "GENERATION_FAILED",
+    "message": "An unexpected error occurred during image generation",
+    "retryable": true,
+    "details": "Error details"
+  }
+}
+```
+
+**Retry Logic:**
+- Automatic retry for transient errors (network issues, rate limits, server errors)
+- Maximum 3 retry attempts with exponential backoff
+- Base delay: 1 second, multiplier: 2x (1s, 2s, 4s)
+- Non-retryable errors (validation, template not found, API key issues) fail immediately
+
+**Requirements Satisfied:**
+- 3.1: Send uploaded image and template prompt to Gemini API
+- 3.3: Display generated image when API responds successfully
+- 3.6: Display error message and provide retry option on API failure
+- 3.7: Display appropriate error message on network issues
+- 7.2: Handle API rate limit errors
+- 7.3: Handle Gemini API errors with retry functionality
+
+---
+
 ## Error Codes
 
 | Code | Description | Retryable |
@@ -346,7 +461,10 @@ Handle user image upload with validation.
 | `FILE_TOO_LARGE` | File exceeds 5MB limit | No |
 | `INVALID_FILE_TYPE` | Unsupported file format | No |
 | `UPLOAD_FAILED` | Upload processing failed | Yes |
-| `API_ERROR` | Server error occurred | Yes |
+| `GENERATION_FAILED` | Image generation failed | Yes |
+| `API_ERROR` | Server/API error occurred | Varies |
+| `RATE_LIMIT` | API rate limit exceeded | Yes |
+| `NETWORK_ERROR` | Network connection issue | Yes |
 
 ## Testing
 
@@ -355,6 +473,7 @@ Run the test suites with:
 npm run dev  # Start dev server in one terminal
 node test-api.mjs  # Test template endpoints
 node test-upload-api.mjs  # Test upload endpoint
+node test-generate-api.mjs  # Test image generation endpoint
 ```
 
 ## Implementation Notes
@@ -380,4 +499,12 @@ node test-upload-api.mjs  # Test upload endpoint
 ✅ **Requirement 2.4**: Accept all supported image formats
 ✅ **Requirement 2.5**: Return temporary image data for generation
 
-All requirements for Tasks 7 and 8 have been successfully implemented and tested.
+### Image Generation (Task 9)
+✅ **Requirement 3.1**: Send uploaded image and template prompt to Gemini API
+✅ **Requirement 3.3**: Display generated image when API responds successfully
+✅ **Requirement 3.6**: Display error message and provide retry option on API failure
+✅ **Requirement 3.7**: Display appropriate error message on network issues
+✅ **Requirement 7.2**: Handle API rate limit errors
+✅ **Requirement 7.3**: Handle Gemini API errors with retry functionality
+
+All requirements for Tasks 7, 8, and 9 have been successfully implemented and tested.
