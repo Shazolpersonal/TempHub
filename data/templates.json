@@ -1,4 +1,32 @@
 {
-  "templates": [],
+  "templates": [
+    {
+      "id": "template-1",
+      "name": "TIME Magazine Cover",
+      "category": "magazine",
+      "prompt": "Create a professional TIME Magazine cover featuring the person in the uploaded image. The cover should have the iconic TIME red border, the TIME logo at the top, and the person should be photographed in a professional, editorial style. Include realistic magazine text elements like 'Person of the Year' or relevant headlines. The lighting should be dramatic and professional, similar to actual TIME covers. Maintain the person's likeness while enhancing the professional quality.",
+      "previewImage": "/template-previews/time-magazine.jpg",
+      "createdAt": "2025-01-15T10:00:00Z",
+      "updatedAt": "2025-01-15T10:00:00Z"
+    },
+    {
+      "id": "template-2",
+      "name": "Influencer Product Shot",
+      "category": "product",
+      "prompt": "Create a high-end influencer-style product photograph featuring the product from the uploaded image. The product should be held or displayed by an elegant hand with professional manicure. The background should be minimalist and luxurious (soft neutral tones, marble, or clean white). Lighting should be soft and flattering, creating a premium aesthetic suitable for Instagram or luxury brand marketing. The composition should be clean and modern.",
+      "previewImage": "/template-previews/influencer-product.jpg",
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-01-15T10:30:00Z"
+    },
+    {
+      "id": "template-3",
+      "name": "Superhero Character",
+      "category": "character",
+      "prompt": "Transform the person in the uploaded image into a powerful superhero character. Create a dynamic comic book or cinematic style portrait with dramatic lighting, heroic pose, and a professional superhero costume. The background should be epic and atmospheric with city skyline or dramatic sky. Maintain the person's facial features while giving them a heroic, larger-than-life appearance. Include subtle special effects like glowing eyes or energy auras if appropriate.",
+      "previewImage": "/template-previews/superhero-character.jpg",
+      "createdAt": "2025-01-15T11:00:00Z",
+      "updatedAt": "2025-01-15T11:00:00Z"
+    }
+  ],
   "categories": []
 }
