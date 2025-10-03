@@ -75,7 +75,31 @@
   - Create handleGeminiError function for error mapping
   - _Requirements: 3.1, 3.6, 3.7, 7.2, 7.3, 7.4, 9.2_
 
-- [ ] 7. Build template API endpoints
+- [x] 7. Build template API endpoints
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   - Create app/api/templates/route.ts with GET handler (fetch all templates with optional category filter)
   - Implement POST handler in same file for creating new templates
   - Create app/api/templates/[id]/route.ts with GET handler for single template
@@ -84,7 +108,17 @@
   - Add error handling and validation to all endpoints
   - _Requirements: 5.2, 5.3, 5.4, 5.5, 5.6_
 
-- [ ] 8. Build image upload API endpoint
+- [x] 8. Build image upload API endpoint
+
+
+
+
+
+
+
+
+
+
   - Create app/api/upload/route.ts with POST handler
   - Implement multipart form data handling for image uploads
   - Add file size and type validation
