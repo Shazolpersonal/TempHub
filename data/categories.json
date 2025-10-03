@@ -1,0 +1,22 @@
+{
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Magazine",
+      "slug": "magazine",
+      "description": "Magazine covers and editorial styles"
+    },
+    {
+      "id": "cat-2",
+      "name": "Product",
+      "slug": "product",
+      "description": "Product photography and marketing"
+    },
+    {
+      "id": "cat-3",
+      "name": "Character",
+      "slug": "character",
+      "description": "Character transformations and portraits"
+    }
+  ]
+}
