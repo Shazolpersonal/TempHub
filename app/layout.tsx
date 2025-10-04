@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { QueryProvider } from '@/lib/query-provider';
 import { WebVitals } from './web-vitals';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -23,10 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <QueryProvider>
-          {children}
-          <WebVitals />
-        </QueryProvider>
+        <ErrorBoundary>
+          <QueryProvider>
+            {children}
+            <WebVitals />
+          </QueryProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
