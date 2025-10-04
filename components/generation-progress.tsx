@@ -66,6 +66,7 @@ export function GenerationProgress({
           
           <div className="p-6">
             <div className="relative aspect-square w-full mb-4 bg-muted rounded-lg overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={generatedImage}
                 alt="Generated image"

@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 interface TemplateGalleryProps {
   initialTemplates: Template[];
   categories: Category[];
+  selectedCategory?: string;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -64,9 +65,10 @@ function EmptyState({ category }: { category: string }) {
 export function TemplateGallery({
   initialTemplates,
   categories,
+  selectedCategory = 'all',
 }: TemplateGalleryProps) {
   const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(selectedCategory);
   const [displayedTemplates, setDisplayedTemplates] = useState<Template[]>([]);
   const [filteredTemplates, setFilteredTemplates] = useState<Template[]>(initialTemplates);
   const [page, setPage] = useState(1);
@@ -148,6 +150,16 @@ export function TemplateGallery({
   // Handle category change
   const handleCategoryChange = (slug: string) => {
     setActiveCategory(slug);
+    
+    // Update URL query parameters
+    const params = new URLSearchParams();
+    if (slug !== 'all') {
+      params.set('category', slug);
+    }
+    
+    const queryString = params.toString();
+    const newUrl = queryString ? `/?${queryString}` : '/';
+    router.push(newUrl);
   };
 
   // Handle template click
