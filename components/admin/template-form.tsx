@@ -145,12 +145,12 @@ export function TemplateForm({
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle>
+        <CardTitle className="text-xl sm:text-2xl">
           {isEditMode ? 'Edit Template' : 'Create New Template'}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Template Name */}
           <div className="space-y-2">
             <Label htmlFor="name">
@@ -250,7 +250,7 @@ export function TemplateForm({
               {previewUrl && (
                 <div className="mt-4">
                   <p className="text-sm font-medium mb-2">Preview:</p>
-                  <div className="relative w-full max-w-md h-64 border rounded-lg overflow-hidden">
+                  <div className="relative w-full max-w-md h-48 sm:h-64 border rounded-lg overflow-hidden">
                     <Image
                       src={previewUrl}
                       alt="Preview"
@@ -264,11 +264,11 @@ export function TemplateForm({
           </div>
 
           {/* Form Actions */}
-          <div className="flex gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1"
+              className="flex-1 touch-manipulation"
             >
               {isSubmitting
                 ? 'Saving...'
@@ -281,7 +281,7 @@ export function TemplateForm({
               variant="outline"
               onClick={onCancel}
               disabled={isSubmitting}
-              className="flex-1"
+              className="flex-1 touch-manipulation"
             >
               Cancel
             </Button>

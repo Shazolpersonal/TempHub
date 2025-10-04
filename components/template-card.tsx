@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { memo } from 'react';
 import { Template } from '@/types';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -8,9 +9,10 @@ import { cn } from '@/lib/utils';
 interface TemplateCardProps {
   template: Template;
   onClick?: () => void;
+  priority?: boolean;
 }
 
-export function TemplateCard({ template, onClick }: TemplateCardProps) {
+function TemplateCardComponent({ template, onClick, priority = false }: TemplateCardProps) {
   return (
     <Card
       className={cn(
@@ -36,6 +38,8 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-110"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          priority={priority}
+          loading={priority ? undefined : 'lazy'}
         />
         
         {/* Category Badge - Positioned on image */}
@@ -61,3 +65,11 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
     </Card>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const TemplateCard = memo(TemplateCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.template.id === nextProps.template.id &&
+    prevProps.priority === nextProps.priority
+  );
+});

@@ -1,8 +1,14 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { QueryProvider } from '@/lib/query-provider';
+import { WebVitals } from './web-vitals';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+});
 
 export const metadata: Metadata = {
   title: 'TempHub - AI Image Generation Platform',
@@ -16,7 +22,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <QueryProvider>
+          {children}
+          <WebVitals />
+        </QueryProvider>
+      </body>
     </html>
   );
 }

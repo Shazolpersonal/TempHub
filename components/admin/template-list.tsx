@@ -75,9 +75,9 @@ export function TemplateList({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between text-lg sm:text-xl">
             <span>Templates</span>
-            <span className="text-sm font-normal text-muted-foreground">
+            <span className="text-xs sm:text-sm font-normal text-muted-foreground">
               Total: {templates.length}
             </span>
           </CardTitle>
@@ -91,14 +91,14 @@ export function TemplateList({
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {templates.map((template) => (
                 <div
                   key={template.id}
-                  className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                 >
                   {/* Preview Image */}
-                  <div className="relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                  <div className="relative w-full sm:w-20 h-40 sm:h-20 flex-shrink-0 rounded-md overflow-hidden bg-muted">
                     <Image
                       src={template.previewImage}
                       alt={template.name}
@@ -109,39 +109,40 @@ export function TemplateList({
 
                   {/* Template Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">
+                    <h3 className="font-semibold text-base sm:text-lg truncate">
                       {template.name}
                     </h3>
-                    <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs sm:text-sm text-muted-foreground">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                         {template.category}
                       </span>
-                      <span>Updated: {formatDate(template.updatedAt)}</span>
+                      <span className="hidden sm:inline">Updated: {formatDate(template.updatedAt)}</span>
+                      <span className="sm:hidden">{formatDate(template.updatedAt)}</span>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                    <p className="mt-2 text-xs sm:text-sm text-muted-foreground line-clamp-2">
                       {template.prompt}
                     </p>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2 flex-shrink-0">
+                  <div className="flex gap-2 sm:flex-shrink-0 w-full sm:w-auto">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => onEdit(template.id)}
-                      className="gap-2"
+                      className="gap-2 flex-1 sm:flex-initial touch-manipulation"
                     >
                       <Pencil className="h-4 w-4" />
-                      Edit
+                      <span className="sm:inline">Edit</span>
                     </Button>
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => handleDeleteClick(template)}
-                      className="gap-2"
+                      className="gap-2 flex-1 sm:flex-initial touch-manipulation"
                     >
                       <Trash2 className="h-4 w-4" />
-                      Delete
+                      <span className="sm:inline">Delete</span>
                     </Button>
                   </div>
                 </div>

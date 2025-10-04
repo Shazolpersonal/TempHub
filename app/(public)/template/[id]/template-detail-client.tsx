@@ -5,11 +5,26 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, Download } from 'lucide-react';
 import { Template } from '@/types';
-import { ImageUploader } from '@/components/image-uploader';
-import { GenerationProgress } from '@/components/generation-progress';
-import { ErrorDisplay } from '@/components/error-display';
+import { useUploadImage, useGenerateImage } from '@/lib/hooks/use-image-generation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import dynamic from 'next/dynamic';
+
+// Dynamically import heavy components for code splitting
+const ImageUploader = dynamic(
+  () => import('@/components/image-uploader').then((mod) => mod.ImageUploader),
+  { ssr: false }
+);
+
+const GenerationProgress = dynamic(
+  () => import('@/components/generation-progress').then((mod) => mod.GenerationProgress),
+  { ssr: false }
+);
+
+const ErrorDisplay = dynamic(
+  () => import('@/components/error-display').then((mod) => mod.ErrorDisplay),
+  { ssr: false }
+);
 
 interface TemplateDetailClientProps {
   template: Template;
@@ -30,6 +45,9 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
   const [error, setError] = useState<GenerationError | null>(null);
   const [progress, setProgress] = useState<number>(0);
 
+  const uploadMutation = useUploadImage();
+  const generateMutation = useGenerateImage();
+
   // Clear state when component unmounts (user navigates away)
   useEffect(() => {
     return () => {
@@ -47,7 +65,7 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
     setError(null);
   };
 
-  const handleImageUpload = async () => {
+  const handleGenerate = async () => {
     if (!uploadedFile) return;
 
     setStatus('uploading');
@@ -55,79 +73,36 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
     setProgress(0);
 
     try {
-      const formData = new FormData();
-      formData.append('image', uploadedFile);
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
-      }
-
-      const data = await response.json();
+      // Upload image
+      const uploadResult = await uploadMutation.mutateAsync(uploadedFile);
       setProgress(50);
-      
-      // Proceed to generation
-      await handleGeneration(data.imageData);
-    } catch (err) {
-      setStatus('error');
-      setError({
-        code: 'UPLOAD_FAILED',
-        message: err instanceof Error ? err.message : 'Failed to upload image',
-        retryable: true,
-      });
-    }
-  };
+      setStatus('generating');
 
-  const handleGeneration = async (imageData: string) => {
-    setStatus('generating');
-    setProgress(50);
-
-    try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          templateId: template.id,
-          imageData,
-        }),
+      // Generate image
+      const generateResult = await generateMutation.mutateAsync({
+        templateId: template.id,
+        imageData: uploadResult.imageData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Generation failed');
-      }
-
-      const data = await response.json();
       setProgress(100);
-      setGeneratedImage(data.generatedImage);
+      setGeneratedImage(generateResult.generatedImage);
       setStatus('complete');
     } catch (err) {
       setStatus('error');
       
       // Determine if error is retryable based on error message
-      const errorMessage = err instanceof Error ? err.message : 'Failed to generate image';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to process image';
       const isRetryable = errorMessage.includes('rate limit') || 
                           errorMessage.includes('network') ||
                           errorMessage.includes('timeout');
       
       setError({
-        code: errorMessage.includes('rate limit') ? 'RATE_LIMIT' : 'GENERATION_FAILED',
+        code: errorMessage.includes('rate limit') ? 'RATE_LIMIT' : 
+              errorMessage.includes('upload') ? 'UPLOAD_FAILED' : 'GENERATION_FAILED',
         message: errorMessage,
         retryable: isRetryable,
       });
     }
-  };
-
-  const handleGenerate = async () => {
-    if (!uploadedFile) return;
-    await handleImageUpload();
   };
 
   const handleRetry = () => {
@@ -157,24 +132,24 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Back Button */}
         <Link 
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 sm:mb-6 transition-colors touch-manipulation active:scale-95"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Gallery
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Left Column - Template Details */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 sm:mb-3">
                 {template.name}
               </h1>
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary capitalize">
+              <div className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-primary/10 text-primary capitalize">
                 {template.category}
               </div>
             </div>
@@ -182,8 +157,8 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
             {/* Template Preview */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Template Preview</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Template Preview</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Example of what your generated image will look like
                 </CardDescription>
               </CardHeader>
@@ -204,13 +179,13 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
             {/* Template Prompt */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">How it works</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">How it works</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   AI generation instructions for this template
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
                   {template.prompt}
                 </p>
               </CardContent>
@@ -218,14 +193,14 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
           </div>
 
           {/* Right Column - Upload & Generate */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Show upload interface when idle or error (and no generated image) */}
             {(status === 'idle' || (status === 'error' && !generatedImage)) && (
               <>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Upload Your Image</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-base sm:text-lg">Upload Your Image</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
                       Upload an image to transform using this template
                     </CardDescription>
                   </CardHeader>
@@ -237,16 +212,16 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
                 {/* Generate Button */}
                 <Button
                   size="lg"
-                  className="w-full"
+                  className="w-full touch-manipulation"
                   disabled={!uploadedFile}
                   onClick={handleGenerate}
                 >
-                  <Sparkles className="w-5 h-5 mr-2" />
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Generate Image
                 </Button>
 
                 {!uploadedFile && (
-                  <p className="text-sm text-center text-gray-500">
+                  <p className="text-xs sm:text-sm text-center text-gray-500">
                     Upload an image to enable generation
                   </p>
                 )}
@@ -261,7 +236,7 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
             {/* Show progress during upload and generation */}
             {(status === 'uploading' || status === 'generating') && (
               <Card>
-                <CardContent className="pt-6">
+                <CardContent className="pt-4 sm:pt-6">
                   <GenerationProgress 
                     status={status} 
                     progress={progress}
@@ -275,8 +250,8 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
               <>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Generated Image</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-base sm:text-lg">Generated Image</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
                       Your AI-generated image is ready!
                     </CardDescription>
                   </CardHeader>
@@ -294,22 +269,22 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
                 </Card>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     size="lg"
-                    className="flex-1"
+                    className="flex-1 touch-manipulation"
                     onClick={handleDownload}
                   >
-                    <Download className="w-5 h-5 mr-2" />
+                    <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Download
                   </Button>
                   <Button
                     size="lg"
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 touch-manipulation"
                     onClick={handleNewGeneration}
                   >
-                    <Sparkles className="w-5 h-5 mr-2" />
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Generate New
                   </Button>
                 </div>

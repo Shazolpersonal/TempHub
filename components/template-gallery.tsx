@@ -3,9 +3,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Template, Category } from '@/types';
-import { CategoryFilter } from './category-filter';
-import { TemplateCard } from './template-card';
 import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
+
+// Dynamically import components for code splitting
+const CategoryFilter = dynamic(
+  () => import('./category-filter').then((mod) => mod.CategoryFilter),
+  { ssr: true }
+);
+
+const TemplateCard = dynamic(
+  () => import('./template-card').then((mod) => mod.TemplateCard),
+  { ssr: true }
+);
 
 interface TemplateGalleryProps {
   initialTemplates: Template[];
@@ -190,11 +200,12 @@ export function TemplateGallery({
             'xl:grid-cols-4'
           )}
         >
-          {displayedTemplates.map((template) => (
+          {displayedTemplates.map((template, index) => (
             <TemplateCard
               key={template.id}
               template={template}
               onClick={() => handleTemplateClick(template.id)}
+              priority={index < 4}
             />
           ))}
 

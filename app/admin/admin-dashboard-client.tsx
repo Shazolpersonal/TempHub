@@ -2,23 +2,31 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Template } from '@/types';
-import { TemplateList } from '@/components/admin/template-list';
+import { useTemplates, useDeleteTemplate } from '@/lib/hooks/use-templates';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, CheckCircle2, XCircle } from 'lucide-react';
+import { Plus, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
-interface AdminDashboardClientProps {
-  initialTemplates: Template[];
-}
+// Dynamically import TemplateList for code splitting
+const TemplateList = dynamic(
+  () => import('@/components/admin/template-list').then((mod) => mod.TemplateList),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  }
+);
 
 type AlertType = 'success' | 'error' | null;
 
-export function AdminDashboardClient({
-  initialTemplates,
-}: AdminDashboardClientProps) {
+export function AdminDashboardClient() {
   const router = useRouter();
-  const [templates, setTemplates] = useState<Template[]>(initialTemplates);
+  const { data: templates = [], isLoading, error } = useTemplates();
+  const deleteTemplateMutation = useDeleteTemplate();
+  
   const [alert, setAlert] = useState<{
     type: AlertType;
     message: string;
@@ -40,21 +48,10 @@ export function AdminDashboardClient({
     router.push(`/admin/templates/${templateId}/edit`);
   };
 
-  // Delete template
+  // Delete template using React Query mutation
   const handleDelete = async (templateId: string) => {
     try {
-      const response = await fetch(`/api/templates/${templateId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete template');
-      }
-
-      // Update local state
-      setTemplates((prev) => prev.filter((t) => t.id !== templateId));
-
+      await deleteTemplateMutation.mutateAsync(templateId);
       showAlert('success', 'Template deleted successfully');
     } catch (error) {
       console.error('Delete error:', error);
@@ -62,7 +59,7 @@ export function AdminDashboardClient({
         'error',
         error instanceof Error ? error.message : 'Failed to delete template'
       );
-      throw error; // Re-throw to let TemplateList handle the error state
+      throw error;
     }
   };
 
@@ -70,7 +67,7 @@ export function AdminDashboardClient({
     <div>
       {/* Alert Messages */}
       {alert && (
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Alert
             variant={alert.type === 'error' ? 'destructive' : 'default'}
             className={
@@ -84,26 +81,48 @@ export function AdminDashboardClient({
             ) : (
               <XCircle className="h-4 w-4" />
             )}
-            <AlertDescription>{alert.message}</AlertDescription>
+            <AlertDescription className="text-sm">{alert.message}</AlertDescription>
           </Alert>
         </div>
       )}
 
       {/* Header with Create Button */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold">Template Management</h2>
-        <Button onClick={handleCreateNew} className="gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold">Template Management</h2>
+        <Button 
+          onClick={handleCreateNew} 
+          className="gap-2 w-full sm:w-auto touch-manipulation"
+        >
           <Plus className="h-4 w-4" />
-          Create New Template
+          <span className="sm:inline">Create New Template</span>
         </Button>
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <Alert variant="destructive">
+          <XCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to load templates. Please try again.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Template List */}
-      <TemplateList
-        templates={templates}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {!isLoading && !error && (
+        <TemplateList
+          templates={templates}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 }
