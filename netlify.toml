@@ -22,14 +22,9 @@
   # Increase timeout for AI image generation (default is 10s)
   # Gemini API calls may take longer
   node_bundler = "esbuild"
-  
-[[functions.generate]]
-  # Specific timeout for image generation endpoint
-  timeout = 30
-
-[[functions.upload]]
-  # Timeout for image upload endpoint
-  timeout = 15
+  # Set default timeout for all functions (in seconds)
+  # This applies to image generation and upload endpoints
+  included_files = ["**"]
 
 # Headers for security and performance
 [[headers]]
